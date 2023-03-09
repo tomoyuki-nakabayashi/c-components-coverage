@@ -4,27 +4,53 @@ on:
   pull_request:
     branches: [ "main" ]
 
-  # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
 
-# A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
-  # This workflow contains a single job called "build"
-  build:
-    # The type of runner that the job will run on
+  test-a:
     runs-on: ubuntu-latest
-
-    # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
-      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
-      - uses: actions/checkout@v3
-
-      # Runs a single command using the runners shell
-      - name: Run a one-line script
-        run: echo Hello, world!
-
-      # Runs a set of commands using the runners shell
-      - name: Run a multi-line script
-        run: |
-          echo Add other actions to build,
-          echo test, and deploy your project.
+    - uses: actions/checkout@v3
+    - name: install packages
+      run: |
+        sudo apt install gcovr
+    - name: run and generate coverage
+      run: |
+        make run
+        make coverage
+      working-directory: components/a
+    - name: 'Upload Artifact'
+      uses: actions/upload-artifact@v3
+      with:
+        name: a
+        path: components/a/coverage.json
+        retention-days: 1
+  test-b:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - name: install packages
+      run: |
+        sudo apt install gcovr
+    - name: run and generate coverage
+      run: |
+        make run
+        make coverage
+      working-directory: components/b
+    - name: 'Upload Artifact'
+      uses: actions/upload-artifact@v3
+      with:
+        name: b
+        path: components/b/coverage.json
+        retention-days: 1
+  coverage-summary:
+    needs: [test-a, test-b]
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - name: Download all workflow run artifacts
+      uses: actions/download-artifact@v3
+      with:
+        path: coverages
+    - name: Display structure of downloaded files
+      run: ls -R
