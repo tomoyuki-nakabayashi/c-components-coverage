@@ -59,8 +59,14 @@ jobs:
       run: |
         readarray -d '' array < <(find coverages/ -name "coverage.json" -print0)
         printf -v options -- "-a "'%s'" " "${array[@]}"
-        gcovr $options -o coverages/summary.txt -s > coverages/short-summary.txt
+        mkdir -p coverage-report
+        gcovr ${options} --html --html-details -o coverage-report/index.html -s > coverages/short-summary.txt
     - name: PR comment with file
       uses: thollander/actions-comment-pull-request@v2
       with:
         filePath: coverages/short-summary.txt
+    - name: Deploy GitHub Pages
+      uses: peaceiris/actions-gh-pages@v3
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        publish_dir: ./coverage-report
