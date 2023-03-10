@@ -20,4 +20,4 @@ $(BIN): $(OBJS)
 	$(CC) $^ $(LDFLAGS) -o $@
 
 coverage:
-	gcovr --root ../../../ . -f '.*\.c' --json -o coverage.json
+	gcovr --root ../../ . -f '.*\.c' --json -o coverage.json
